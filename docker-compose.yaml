@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # .NET Core Uygulaması
+  app:
+    build:
+      context: .               # Dockerfile'ın bulunduğu dizin
+      dockerfile: Dockerfile   # Dockerfile adı (varsayılan)
+    container_name: my-app
+    restart: unless-stopped
+    expose:
+      - "5000"                # .NET Core'un dinlediği iç port (örneğin 5000)
+    networks:
+      - app-network
+
+  # Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"               # Dışarıya 80 portundan erişim
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  # Nginx konfigürasyonu
+    depends_on:
+      - app                   # Önce .NET Core'un ayağa kalkmasını bekler
+    networks:
+      - app-network
+
+# Özel ağ (container'ların birbiriyle iletişimi için)
+networks:
+  app-network:
+    driver: bridge
